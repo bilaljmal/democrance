@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  # Django web application
+  web:
+    container_name: django_app
+    build:
+      context: ./project
+      dockerfile: ./Dockerfile
+    volumes:
+      - staticfiles:/neksio/static/
+    env_file:
+      - ./.env
+#    ports:
+#      - '8000:8000'
+    depends_on:
+      - db
+    networks:
+      - nginx_network
+  db:
+    image: postgres
+    container_name: postgres_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    env_file:
+      - ./.env
+    networks:
+      - nginx_network
+  nginx:
+
+    container_name: nginx
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - web
+    volumes:
+      - ./nginx:/etc/nginx/conf.d
+    networks:
+      - nginx_network
+
+networks:
+  nginx_network:
+volumes:
+  postgres_data:
+  staticfiles:
